@@ -4,20 +4,21 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const config = {
-  server: "localhost", // 👈 IMPORTANT
+  server: process.env.DB_SERVER,
   database: process.env.DB_NAME,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  port: 1433,
   options: {
     encrypt: false,
     trustServerCertificate: true,
   },
 };
 
-const connectDB = async () => {
+let pool;
+
+export const connectDB = async () => {
   try {
-    await sql.connect(config);
+    pool = await sql.connect(config);
     console.log("✅ SQL Server Connected using SQL Authentication");
   } catch (error) {
     console.error("❌ SQL Server Connection Failed:", error);
@@ -25,4 +26,4 @@ const connectDB = async () => {
   }
 };
 
-export default connectDB;
+export const getPool = () => pool;
