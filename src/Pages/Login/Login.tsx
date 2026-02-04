@@ -1,60 +1,225 @@
+
 import { useState } from "react";
 import "./Login.css";
+import BrandingPanel from "../../Components/BrandingPanel/BrandingPanel";
+import { Link, useNavigate } from "react-router-dom";
+import { Chrome } from "lucide-react";
+import logo from "../../assets/logo.png"
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [isLoginMode, setIsLoginMode] = useState(true);
+  const navigate = useNavigate();
+
+  // Form states
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    fullName: "",
+    confirmPassword: "",
+    rememberMe: false,
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: "" });
+    }
+  };
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    }
+
+    if (!isLoginMode) {
+      // Register mode validations
+      if (!formData.fullName) {
+        newErrors.fullName = "Full Name is required";
+      }
+
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ email, password });
+    if (validate()) {
+      // Mock API call
+      console.log("Form Submitted", formData);
+      // Simulate success
+      setTimeout(() => {
+        navigate("/dashboard"); // Redirect to dashboard (to be created or just mock)
+      }, 1000);
+    }
+  };
+
+  const toggleMode = () => {
+    setIsLoginMode(!isLoginMode);
+    setErrors({});
+    setFormData({ ...formData, password: "", confirmPassword: "" });
   };
 
   return (
-    <div className="login-wrapper">
-      {/* LEFT BRAND SECTION */}
-      <div className="login-brand">
-        <h1>POSBillingCRM</h1>
-        <p>
-          Smart billing, inventory & CRM <br />
-          built for modern businesses
-        </p>
+    <div className="auth-page">
+      {/* Left Section - Auth Form */}
+      <div className="auth-section">
+        <div className="auth-container">
+          {/* Brand Logo */}
+          <Link to="/" className="auth-logo">
+            {/* <span className="logo-icon">💠</span> Arambh POS */}
+            <img src={logo} alt="Bill Easy" className="logo-icon" />
+          </Link>
+
+          <div className="auth-form-wrapper">
+            <div className="auth-header">
+              <h1>{isLoginMode ? "Welcome Back" : "Create Your Account"}</h1>
+              <p>
+                {isLoginMode
+                  ? "Enter your email and password to access your account."
+                  : "Sign up to start managing your restaurant efficiently."}
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="auth-form">
+              {/* Register: Full Name */}
+              {!isLoginMode && (
+                <div className="form-group">
+                  <label htmlFor="fullName">Full Name</label>
+                  <input
+                    type="text"
+                    id="fullName"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleInputChange}
+                    placeholder="John Doe"
+                    className={errors.fullName ? "error" : ""}
+                  />
+                  {errors.fullName && <span className="error-text">{errors.fullName}</span>}
+                </div>
+              )}
+
+              {/* Email */}
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="name@company.com"
+                  className={errors.email ? "error" : ""}
+                />
+                {errors.email && <span className="error-text">{errors.email}</span>}
+              </div>
+
+              {/* Password */}
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="••••••••"
+                  className={errors.password ? "error" : ""}
+                />
+                {errors.password && <span className="error-text">{errors.password}</span>}
+              </div>
+
+              {/* Register: Confirm Password */}
+              {!isLoginMode && (
+                <div className="form-group">
+                  <label htmlFor="confirmPassword">Confirm Password</label>
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    placeholder="••••••••"
+                    className={errors.confirmPassword ? "error" : ""}
+                  />
+                  {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
+                </div>
+              )}
+
+              {/* Login Options: Remember Me & Forgot Password */}
+              {isLoginMode && (
+                <div className="form-options">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="rememberMe"
+                      checked={formData.rememberMe}
+                      onChange={handleInputChange}
+                    />
+                    Remember Me
+                  </label>
+                  <a href="#" className="forgot-password">
+                    Forgot Password?
+                  </a>
+                </div>
+              )}
+
+              <button type="submit" className="btn-primary-login">
+                {isLoginMode ? "Log In" : "Register"}
+              </button>
+
+              <div className="divider">
+                <span>Or {isLoginMode ? "Login" : "Register"} With</span>
+              </div>
+
+              <div className="social-buttons">
+                <button type="button" className="btn-social">
+                  <Chrome size={20} />
+                  Google
+                </button>
+                {/* Optional Apple button if needed */}
+              </div>
+            </form>
+
+            <div className="auth-footer">
+              <p>
+                {isLoginMode ? "Don't have an account? " : "Already have an account? "}
+                <button type="button" onClick={toggleMode} className="btn-link">
+                  {isLoginMode ? "Register Now" : "Login"}
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* RIGHT LOGIN SECTION */}
-      <div className="login-panel">
-        <div className="login-box">
-          <h2>Welcome Back</h2>
-          <span className="login-caption">Please login to your account</span>
-
-          <form onSubmit={handleSubmit}>
-            <div className="input-group">
-              <label>Email</label>
-              <input
-                type="email"
-                placeholder="name@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="input-group">
-              <label>Password</label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <button type="submit">Login</button>
-          </form>
-
-          <footer>© {new Date().getFullYear()} POSBillingCRM</footer>
-        </div>
+      {/* Right Section - Branding Panel */}
+      <div className="branding-section">
+        <BrandingPanel />
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ const LandingPage = () => {
 
   const [scrolled, setScrolled] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-   const navigate = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
