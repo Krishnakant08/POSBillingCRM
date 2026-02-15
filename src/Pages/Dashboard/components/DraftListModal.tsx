@@ -15,7 +15,7 @@ const DraftsListModal = ({ isOpen, onClose, drafts, onResume, onDelete }: Drafts
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content" style={{ maxWidth: '700px' }}>
+            <div className="modal-content" >
                 <div className="modal-header">
                     <h2>Draft Orders ({drafts.length})</h2>
                     <button onClick={onClose} className="close-btn">
